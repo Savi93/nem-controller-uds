@@ -4,4 +4,6 @@ The core features of the tool are layered on top of the UDS protocol stack, and 
 In order to correctly communicate on the CAN bus, a 2 channel ETAS ETAS582.X interface is used.
 As final point, a CONFIG file was provided to select communication baudrate, interface channel and off timing of the grid heater.
 
+### Technologies used: Python, ETAS582.X (CAN interface)
+
 ![Alt text](gui-comander.png)
