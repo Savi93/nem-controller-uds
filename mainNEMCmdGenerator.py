@@ -62,6 +62,12 @@ class mainNEMCmdGenerator():
 				self.heater_on["state"] = "normal";
 				self.heater_off["state"] = "normal";
 
+				self.temp_label["state"] = "normal";
+				self.temp_rte["state"] = "normal";
+				self.temp_neg_20["state"] = "normal";
+				self.temp_0["state"] = "normal";
+				self.temp_20["state"] = "normal";
+
 			except Exception as e:
 				self.connect_butt["text"] = "CONNECT"
 				self.connect_butt["background"] = "GREEN";
@@ -87,6 +93,12 @@ class mainNEMCmdGenerator():
 			self.heater_on["state"] = "disable";
 			self.heater_off["state"] = "disable";
 
+			self.temp_label["state"] = "disable";
+			self.temp_rte["state"] = "disable";
+			self.temp_neg_20["state"] = "disable";
+			self.temp_0["state"] = "disable";
+			self.temp_20["state"] = "disable";
+
 			self.canCom.releaseAll();
 			self.canCom.closeInterface();
 
@@ -96,9 +108,13 @@ class mainNEMCmdGenerator():
 	def controlloHeater(self, ctrl):
 		self.returnCode = self.canCom.sendData(out = "Heater", cmd = ctrl);
 
+	def controlloTempOlio(self, ctrl):
+		self.returnCode = self.canCom.sendData(out = "Temperatura", cmd = ctrl);
+	
+
 	def initGraphics(self):
 		self.window = tk.Tk();
-		self.window.title("NEM cmd gen. v. 1.1");
+		self.window.title("NEM cmd gen. v. 2.0");
 
 		width= 350
 		height= 400
@@ -164,10 +180,35 @@ class mainNEMCmdGenerator():
 		self.heater_on.config(font= 'sans 11 bold',);
 		self.heater_on.place(width = 50, height = 30, x = 230, y = 170);
 
+		self.temp_label = tk.Label(self.window, background="white", text="Oil temp.", font = "Arial 10 bold", state = "disable");
+		self.temp_label.place(x = 30 , y = 210);
+
+		self.temp_rte = tk.Button(self.window, state = "disable", background = "LIGHTGREY", command = lambda: self.controlloTempOlio('Rte'));
+		self.temp_rte["text"] = "RTE";
+		self.temp_rte.config(font= 'sans 11 bold',);
+		self.temp_rte.place(width = 40, height = 30, x = 120, y = 210);
+
+		self.temp_rte_tooltip = Hovertip(self.temp_rte, "Used to release I/O control on the input oil temperature.");
+
+		self.temp_neg_20 = tk.Button(self.window, state = "disable", command = lambda: self.controlloTempOlio('-20'));
+		self.temp_neg_20["text"] = "-20°";
+		self.temp_neg_20.config(font= 'sans 9 bold',);
+		self.temp_neg_20.place(width = 30, height = 30, x = 170, y = 210);
+
+		self.temp_0 = tk.Button(self.window, state = "disable", command = lambda: self.controlloTempOlio('0'));
+		self.temp_0["text"] = "0°";
+		self.temp_0.config(font= 'sans 9 bold',);
+		self.temp_0.place(width = 30, height = 30, x = 202, y = 210);
+
+		self.temp_20 = tk.Button(self.window, state = "disable", command = lambda: self.controlloTempOlio('20'));
+		self.temp_20["text"] = "+20°";
+		self.temp_20.config(font= 'sans 9 bold',);
+		self.temp_20.place(width = 30, height = 30, x = 234, y = 210);
+
 		self.connect_butt = tk.Button(self.window, command = self.connectToInterface);
 		self.connect_butt["text"] = "CONNECT";
 		self.connect_butt.config(background = "GREEN", font= 'sans 11 bold',);
-		self.connect_butt.place(width = 200, height = 40, x = 80, y = 300);
+		self.connect_butt.place(width = 200, height = 40, x = 80, y = 340);
 
 		self.window.protocol('WM_DELETE_WINDOW', self.destroy);
 		self.window.mainloop();

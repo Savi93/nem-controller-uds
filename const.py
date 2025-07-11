@@ -30,7 +30,8 @@ class configParams:
 
 class canDetails:
 	TX_ADDRESS = 0x18DA21FA;
-	DID = {"Ventolone": {'HB': 0x10, 'LB': 0x16}, "Heater": {'HB': 0x10, 'LB': 0x04}};
+	#HEATER per modifiche circuitali e' ora un'input digitale di controllo
+	DID = {"Ventolone": {'HB': 0x10, 'LB': 0x16}, "Heater": {'HB': 0x12, 'LB': 0x07}, "Temperatura":{'HB': 0x12, 'LB': 0x1D}};
 	TESTER_TIMEOUT = 15;
 
 class generics:

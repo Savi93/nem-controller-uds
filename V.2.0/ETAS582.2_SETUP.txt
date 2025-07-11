@@ -1,0 +1,10 @@
+Utilizzo ETAS ES582.2 con Python:
+1. Installazione driver da CD.
+   Se il setup è andato a buon fine, collegando il dispositivo dev'essere riconosciuto correttamente dal Device Manager di Windows (es. Etas Bus Interfaces: ES582.x)
+2. Setup delle librerie del framework di supporto per Python (SCARICARE: BOA API - BOA (ECU and Bus interface packages) V2.43.0 Distribution Package x64):
+   https://www.etas.com/ww/de/herunterladen/?path=%2F&page=1&order=asc&layout=table&search=id+18102
+3. Includere la lib can (python-can) e in maniera esplicita anche can.interfaces.etas
+4. Per istanziare l'oggetto relativo all'interfaccia, richiamare l'API con i seguenti argomenti:
+	can.ThreadSafeBus(interface='etas',channel='ETAS://USB/ES582.1:4237067/CAN:1', bitrate = XXXXX, receive_own_messages=True, can_filters = [{"can_id": 0x18DAFA21, "can_mask": 0xFFFFFFFF, "extended": True}]);
+
+Vedi https://python-can.readthedocs.io/en/ per informazioni ulteriori riguardo le chiamate a funzione previste dalla lib python-can

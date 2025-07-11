@@ -15,11 +15,23 @@ class canCommunicator():
 	def initInterface(self):
 		configs = can.interface.detect_available_configs(interfaces=self.configParams.NAME);
 
+		#Parametri temporanei nel caso di interfacce multiple collegate
+		counter_interfaces = 0;
+		stored_index = [];
+
 		for i in range (0, len(configs) - 1):
 			if(self.configParams.DRIVER in configs[i]['channel'] and self.configParams.CHANNEL in configs[i]['channel']):
-				self.selectedInterface = configs[i]['channel'];
-				print(f"Found interface: {self.selectedInterface}\n");
-				break;
+				counter_interfaces = counter_interfaces + 1;
+				stored_index.append(i);
+
+		#Se c'è solo un'interfaccia collegata, collegati alla prima, altrimenti alla seconda
+		if(counter_interfaces == 1):
+			self.selectedInterface = configs[stored_index[0]]['channel'];
+			print(f"Found interface: {self.selectedInterface}\n");
+
+		elif(counter_interfaces > 1):
+			self.selectedInterface = configs[stored_index[1]]['channel'];
+			print(f"Found interface: {self.selectedInterface}\n");
 
 		self.bus = can.ThreadSafeBus(interface='etas',channel=self.selectedInterface, bitrate=self.configParams.BAUDRATE, receive_own_messages=True, can_filters = [{"can_id": 0x18DAFA21, "can_mask": 0xFFFFFFFF, "extended": True}]);
 
@@ -36,8 +48,10 @@ class canCommunicator():
 					if(out == "Heater"):
 						print("Heater RTE");
 						self.isHeaterOn = False;
-					else:
+					elif(out == "Ventolone"):
 						print("Ventolone RTE");
+					elif(out == "Temperatura"):
+						print("Temperatura olio RTE");
 				elif(cmd == "Off"):
 					self.bus.send(can.Message(arbitration_id=const.canDetails.TX_ADDRESS, is_extended_id=True, data=[0x05, 0x2F, const.canDetails.DID[out]["HB"], const.canDetails.DID[out]["LB"], 0x03, 0x00]));
 					if(out == "Heater"):
@@ -50,9 +64,19 @@ class canCommunicator():
 					self.bus.send(can.Message(arbitration_id=const.canDetails.TX_ADDRESS, is_extended_id=True, data=[0x05, 0x2F, const.canDetails.DID[out]["HB"], const.canDetails.DID[out]["LB"], 0x03, 0x01]));
 					self.isHeaterOn = True;
 					self.timeHeaterOn = time.time();
+				elif(cmd == "-20"):
+					print("Temp. -20")
+					self.bus.send(can.Message(arbitration_id=const.canDetails.TX_ADDRESS, is_extended_id=True, data=[0x06, 0x2F, const.canDetails.DID[out]["HB"], const.canDetails.DID[out]["LB"], 0x03, 0xA0, 0x1F]));
+				elif(cmd == "0"):
+					print("Temp. 0")
+					self.bus.send(can.Message(arbitration_id=const.canDetails.TX_ADDRESS, is_extended_id=True, data=[0x06, 0x2F, const.canDetails.DID[out]["HB"], const.canDetails.DID[out]["LB"], 0x03, 0x20, 0x22]));
 				elif(cmd == "20"):
-					print("Vent. 20")
-					self.bus.send(can.Message(arbitration_id=const.canDetails.TX_ADDRESS, is_extended_id=True, data=[0x05, 0x2F, const.canDetails.DID[out]["HB"], const.canDetails.DID[out]["LB"], 0x03, 0x01]));
+					if(out == "Ventolone"):
+						print("Vent. 20")
+						self.bus.send(can.Message(arbitration_id=const.canDetails.TX_ADDRESS, is_extended_id=True, data=[0x05, 0x2F, const.canDetails.DID[out]["HB"], const.canDetails.DID[out]["LB"], 0x03, 0x01]));
+					else:
+						print("Temp. 20")
+						self.bus.send(can.Message(arbitration_id=const.canDetails.TX_ADDRESS, is_extended_id=True, data=[0x06, 0x2F, const.canDetails.DID[out]["HB"], const.canDetails.DID[out]["LB"], 0x03, 0xA0, 0x24]));
 				elif(cmd == "80"):
 					print("Vent. 80");
 					self.bus.send(can.Message(arbitration_id=const.canDetails.TX_ADDRESS, is_extended_id=True, data=[0x05, 0x2F, const.canDetails.DID[out]["HB"], const.canDetails.DID[out]["LB"], 0x03, 0x02]));
@@ -81,6 +105,8 @@ class canCommunicator():
 			if(self.bus != None):
 				for elem in const.canDetails.DID:
 					self.bus.send(can.Message(arbitration_id=const.canDetails.TX_ADDRESS, is_extended_id=True, data=[0x04, 0x2F, const.canDetails.DID[elem]["HB"], const.canDetails.DID[elem]["LB"], 0x00]));
+					#Sleep aggiunto per evitare conflitti tra diverse chiamate .send()
+					time.sleep(0.1);
 					print("Release");
 
 				self.isHeaterOn = False;
